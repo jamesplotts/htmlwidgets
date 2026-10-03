@@ -1,0 +1,197 @@
+.weather-body {
+  gap: 8px;
+  position: relative;
+}
+
+.wx-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.wx-city {
+  font-size: 0.9em;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wx-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.wx-now {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.wx-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.wx-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.wx-temp {
+  font-size: 2em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.wx-condition {
+  font-size: 0.78em;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.wx-forecast {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.wx-forecast-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.68em;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 6px 2px;
+}
+
+.wx-forecast-day .wxf-label {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.wx-forecast-day .wxf-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.wx-forecast-day .wxf-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.wx-forecast-day .wxf-temps {
+  white-space: nowrap;
+}
+
+.wx-forecast-day .wxf-hi {
+  font-weight: 600;
+}
+
+.wx-forecast-day .wxf-lo {
+  color: var(--text-dim);
+}
+
+.wx-status {
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: 0.62em;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.wx-status.offline {
+  color: #ffcc80;
+}
+
+#refreshBtn.spinning svg {
+  animation: wx-spin 0.8s linear infinite;
+}
+
+@keyframes wx-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Settings overlay */
+.wx-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(165deg, rgba(16, 28, 53, 0.97), rgba(43, 79, 143, 0.97));
+  border-radius: var(--card-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+}
+
+.wx-overlay.hidden {
+  display: none;
+}
+
+.wx-overlay-title {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.wx-overlay input {
+  font-family: inherit;
+  font-size: 0.9em;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-color);
+}
+
+.wx-overlay input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.wx-error {
+  font-size: 0.68em;
+  color: #ff8a80;
+  min-height: 1em;
+}
+
+.wx-overlay-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.wx-btn {
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 0.8em;
+  font-weight: 600;
+  cursor: pointer;
+  background: #4fc3f7;
+  color: #00243f;
+}
+
+.wx-btn-ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-color);
+  font-weight: 500;
+}

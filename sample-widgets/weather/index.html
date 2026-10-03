@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Weather</title>
+<link rel="stylesheet" href="../common/card.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="card__body weather-body">
+      <div class="wx-header">
+        <div id="cityLabel" class="wx-city">—</div>
+        <div class="wx-actions">
+          <button id="refreshBtn" class="icon-btn" aria-label="Refresh">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+          <button id="settingsBtn" class="icon-btn" aria-label="Settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="wx-now">
+        <div id="nowIcon" class="wx-icon"></div>
+        <div class="wx-temp-block">
+          <div id="nowTemp" class="wx-temp">—°</div>
+          <div id="nowCondition" class="wx-condition">Loading…</div>
+        </div>
+      </div>
+
+      <div id="forecastRow" class="wx-forecast"></div>
+
+      <div id="statusLine" class="wx-status"></div>
+    </div>
+
+    <div id="settingsOverlay" class="wx-overlay hidden">
+      <div class="wx-overlay-title">City</div>
+      <input id="cityInput" type="text" placeholder="e.g. Chicago" spellcheck="false" autocomplete="off">
+      <div id="settingsError" class="wx-error"></div>
+      <div class="wx-overlay-actions">
+        <button id="cancelBtn" class="wx-btn wx-btn-ghost">Cancel</button>
+        <button id="saveBtn" class="wx-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+.cal-body {
+  gap: 8px;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cal-month {
+  font-size: 0.95em;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 0.65em;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.cal-weekdays .sun {
+  color: #ff8a80;
+}
+
+.cal-weekdays .sat {
+  color: #82b1ff;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 2px;
+  flex: 1;
+}
+
+.cal-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78em;
+  border-radius: 6px;
+  position: relative;
+}
+
+.cal-day.sunday {
+  color: #ff8a80;
+}
+
+.cal-day.saturday {
+  color: #82b1ff;
+}
+
+.cal-day.adjacent {
+  opacity: 0.35;
+}
+
+.cal-day.today {
+  background: rgba(255, 255, 255, 0.22);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}

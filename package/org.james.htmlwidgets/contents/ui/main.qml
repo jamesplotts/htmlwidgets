@@ -44,8 +44,19 @@ PlasmoidItem {
         root._stripFileScheme(Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation))
         + "/.local/share/html-widgets/sample/index.html"
 
+    // Dev/testing hook: plasmoidviewer's positional "externalData" CLI
+    // argument (and real drag-and-drop of a file onto the widget) land
+    // here, letting `test-plasmoidviewer.sh <path>` preview a specific
+    // widget without touching the saved config.
+    property string _droppedHtmlPath: ""
+    onExternalData: function (mimetype, data) {
+        root._droppedHtmlPath = data
+    }
+
     readonly property string htmlPath:
-        (Plasmoid.configuration.htmlPath && Plasmoid.configuration.htmlPath.length > 0)
+        root._droppedHtmlPath.length > 0
+        ? root._droppedHtmlPath
+        : (Plasmoid.configuration.htmlPath && Plasmoid.configuration.htmlPath.length > 0)
         ? Plasmoid.configuration.htmlPath
         : root.defaultHtmlPath
 
@@ -78,7 +89,10 @@ PlasmoidItem {
         backgroundColor: "transparent"
 
         settings.localContentCanAccessFileUrls: true
-        settings.localContentCanAccessRemoteUrls: false
+        // Needed for widgets that fetch() a remote API (e.g. the weather
+        // widget hitting Open-Meteo). Any HTML this plasmoid loads can
+        // make outbound network requests as a result — see README.
+        settings.localContentCanAccessRemoteUrls: true
         settings.showScrollBars: false
 
         url: "file://" + root.htmlPath

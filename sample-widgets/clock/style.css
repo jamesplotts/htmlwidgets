@@ -1,0 +1,41 @@
+.clock-body {
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.clock-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 220px;
+  max-height: 220px;
+  /* The bezel/face already cast their own shadow when the card is
+     flattened away — keeps the clock looking grounded either way. */
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+}
+
+.clock-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .clock-toggle,
+.card.flat:hover .clock-toggle {
+  opacity: 1;
+}
+
+/* "Transparent background" mode: strip the card chrome so only the round
+   clock face sits directly on the desktop. */
+.card.flat {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.card.flat::before {
+  display: none;
+}
