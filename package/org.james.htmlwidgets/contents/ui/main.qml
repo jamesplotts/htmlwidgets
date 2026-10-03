@@ -45,9 +45,15 @@ PlasmoidItem {
         return s.toString().replace(/^file:\/\//, "")
     }
 
+    // The sample widget ships bundled inside the plasmoid package itself
+    // (contents/html-widgets/sample/), so the widget works immediately
+    // after install — no separate install.sh step required. Resolving it
+    // relative to this QML file's own location (rather than guessing an
+    // absolute install prefix) works whether the package ended up under
+    // ~/.local/share/plasma/plasmoids/ (per-user) or /usr/share/plasma/
+    // plasmoids/ (system-wide, e.g. a distro package).
     readonly property string defaultHtmlPath:
-        root._stripFileScheme(Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation))
-        + "/.local/share/html-widgets/sample/index.html"
+        root._stripFileScheme(Qt.resolvedUrl("../html-widgets/sample/index.html"))
 
     // Dev/testing hook: plasmoidviewer's positional "externalData" CLI
     // argument (and real drag-and-drop of a file onto the widget) land

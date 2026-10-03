@@ -27,8 +27,15 @@ KCM.SimpleKCM {
     readonly property string homeDir:
         Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation).toString().replace(/^file:\/\//, "")
 
-    readonly property string widgetsBaseDir: homeDir + "/.local/share/html-widgets"
-    readonly property string defaultHtmlPath: widgetsBaseDir + "/sample/index.html"
+    // Two places widgets can live: bundled inside the plasmoid package
+    // itself (works immediately, no setup — resolved relative to this QML
+    // file's own install location, same trick as main.qml's
+    // defaultHtmlPath) and the user's own ~/.local/share/html-widgets/ for
+    // custom widgets dropped in separately.
+    readonly property string bundledWidgetsDir:
+        Qt.resolvedUrl("../html-widgets").toString().replace(/^file:\/\//, "")
+    readonly property string userWidgetsDir: homeDir + "/.local/share/html-widgets"
+    readonly property string defaultHtmlPath: bundledWidgetsDir + "/sample/index.html"
 
     Kirigami.FormLayout {
         ComboBox {
@@ -40,7 +47,7 @@ KCM.SimpleKCM {
             enabled: root.discoveredWidgets.length > 0
             displayText: enabled
                 ? (currentIndex >= 0 ? currentText : i18nc("@info:placeholder", "Choose one…"))
-                : i18nc("@info:placeholder", "None found in ~/.local/share/html-widgets")
+                : i18nc("@info:placeholder", "None found")
             onActivated: function (index) {
                 pathField.text = root.discoveredWidgets[index].path
             }
@@ -51,8 +58,8 @@ KCM.SimpleKCM {
             wrapMode: Text.WordWrap
             font.italic: true
             text: i18nc("@info",
-                "Every folder under ~/.local/share/html-widgets/ with an index.html in it shows up " +
-                "here automatically — that's where install.sh puts the bundled widgets.")
+                "Lists every bundled widget shipped with this plasmoid, plus anything you've " +
+                "dropped into ~/.local/share/html-widgets/ — any folder with an index.html in it.")
         }
 
         Item {
@@ -117,11 +124,14 @@ KCM.SimpleKCM {
         }
     }
 
-    // Finds every installed sub-widget by looking for an index.html one
-    // level down from html-widgets/ — simpler and more accurate than
+    // Finds every available sub-widget by looking for an index.html one
+    // level down from each widgets dir — simpler and more accurate than
     // listing directories (Qt.labs.folderlistmodel) and guessing which
     // ones are real widgets vs. support folders like common/, which this
-    // naturally excludes since it has no index.html of its own.
+    // naturally excludes since it has no index.html of its own. Searches
+    // both the bundled and user-custom locations; if a name exists in
+    // both, both still show up (distinguishable by path on hover) rather
+    // than silently picking one.
     P5Support.DataSource {
         id: scanSource
         engine: "executable"
@@ -137,7 +147,8 @@ KCM.SimpleKCM {
             disconnectSource(sourceName)
         }
         Component.onCompleted: {
-            connectSource("find " + root.widgetsBaseDir + " -mindepth 2 -maxdepth 2 -iname index.html 2>/dev/null | sort")
+            connectSource("find " + root.bundledWidgetsDir + " " + root.userWidgetsDir +
+                " -mindepth 2 -maxdepth 2 -iname index.html 2>/dev/null | sort")
         }
     }
 }
