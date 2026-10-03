@@ -21,18 +21,23 @@ PlasmoidItem {
 
     preferredRepresentation: fullRepresentation
 
-    // Direct width/height give the initial size when placed as a floating
-    // desktop widget (Layout.* attached properties alone are only honored
-    // when the item sits inside a real Layout, e.g. in a panel — measured
-    // this empirically: without these, plasmoidviewer gave the applet a
-    // bare 112x112 regardless of the Layout.preferred* hints below).
-    width: Kirigami.Units.gridUnit * 16
-    height: Kirigami.Units.gridUnit * 10
+    // implicitWidth/Height (not width/height!) give the initial size when
+    // placed as a floating desktop widget — Layout.* attached properties
+    // alone are only honored when the item sits inside a real Layout, e.g.
+    // in a panel (measured empirically: without one of these,
+    // plasmoidviewer gave the applet a bare 112x112 regardless of
+    // Layout.preferred* below). Binding width/height directly, rather than
+    // their implicit counterparts, was a mistake: it fights the
+    // containment's own resize handle, since the item's size stays
+    // pinned to that expression instead of yielding to an explicit
+    // external resize. implicit* only supplies a default.
+    implicitWidth: Kirigami.Units.gridUnit * 16
+    implicitHeight: Kirigami.Units.gridUnit * 10
 
     Layout.minimumWidth: Kirigami.Units.gridUnit * 6
     Layout.minimumHeight: Kirigami.Units.gridUnit * 6
-    Layout.preferredWidth: width
-    Layout.preferredHeight: height
+    Layout.preferredWidth: implicitWidth
+    Layout.preferredHeight: implicitHeight
 
     // StandardPaths.writableLocation() returns a file:// URL, not a plain
     // path — strip the scheme so htmlPath is always a plain filesystem path.
@@ -88,6 +93,12 @@ PlasmoidItem {
         webChannel: channel
         backgroundColor: "transparent"
 
+        // Chromium's generic anti-ad-autoplay heuristic doesn't serve any
+        // purpose for a trusted local widget the user chose themselves —
+        // without this, QtWebEngine's stricter-than-default gesture
+        // tracking could make a real click on a widget's own play button
+        // mysteriously fail to count as "sticky" activation.
+        settings.playbackRequiresUserGesture: false
         settings.localContentCanAccessFileUrls: true
         // Needed for widgets that fetch() a remote API (e.g. the weather
         // widget hitting Open-Meteo). Any HTML this plasmoid loads can

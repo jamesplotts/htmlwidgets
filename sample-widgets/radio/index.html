@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Radio</title>
+<link rel="stylesheet" href="../common/card.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+  <div class="card">
+    <div class="card__body radio-body">
+      <div class="faceplate">
+        <div class="lcd-screen">
+          <canvas id="spectrum" class="spectrum-canvas"></canvas>
+          <div class="lcd-marquee-wrap">
+            <div id="marquee" class="lcd-marquee">
+              <span id="marqueeText">Select a station</span>
+            </div>
+          </div>
+          <div id="lcdSub" class="lcd-sub"></div>
+        </div>
+
+        <div class="controls-row">
+          <button id="prevBtn" class="xport-btn" aria-label="Previous favorite" title="Previous favorite">
+            <svg viewBox="0 0 24 24"><polygon points="18 4 18 20 7 12"/><rect x="4" y="4" width="2" height="16"/></svg>
+          </button>
+
+          <button id="playBtn" class="xport-btn xport-btn-play" aria-label="Play" title="Play/Stop">
+            <svg id="playIcon" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20"/></svg>
+            <svg id="stopIcon" viewBox="0 0 24 24" class="hidden"><rect x="6" y="6" width="12" height="12"/></svg>
+          </button>
+
+          <button id="nextBtn" class="xport-btn" aria-label="Next favorite" title="Next favorite">
+            <svg viewBox="0 0 24 24"><polygon points="6 4 6 20 17 12"/><rect x="18" y="4" width="2" height="16"/></svg>
+          </button>
+
+          <div class="knob-wrap" id="knobWrap" title="Volume">
+            <svg id="volumeKnob" class="volume-knob" viewBox="0 0 60 60">
+              <defs>
+                <radialGradient id="knobGrad" cx="35%" cy="30%" r="75%">
+                  <stop offset="0%" stop-color="#eceef1"/>
+                  <stop offset="55%" stop-color="#9aa0aa"/>
+                  <stop offset="100%" stop-color="#5a5e66"/>
+                </radialGradient>
+              </defs>
+              <circle cx="30" cy="30" r="27" fill="url(#knobGrad)" stroke="#2c2e33" stroke-width="1"/>
+              <g id="knobPointer">
+                <rect x="28.5" y="6" width="3" height="12" rx="1.5" fill="#1a1a1a"/>
+              </g>
+            </svg>
+          </div>
+
+          <button id="favBtn" class="xport-btn xport-btn-small" aria-label="Save to favorites" title="Save to favorites">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 16.5 14.5 18.5 21.5 12 17.5 5.5 21.5 7.5 14.5 2 9.5 9 9"/></svg>
+          </button>
+
+          <button id="searchBtn" class="xport-btn xport-btn-small" aria-label="Search stations" title="Search stations">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="searchOverlay" class="radio-overlay hidden">
+      <div class="radio-overlay-header">
+        <input id="searchInput" type="text" placeholder="Station or city…" spellcheck="false" autocomplete="off">
+        <button id="closeSearchBtn" class="icon-btn" aria-label="Close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="searchStatus" class="radio-search-status"></div>
+      <div id="searchResults" class="radio-results"></div>
+    </div>
+  </div>
+
+  <audio id="player" crossorigin="anonymous" preload="none"></audio>
+
+  <!-- Served from the QtWebEngine instance itself; no local copy needed. -->
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <script src="radiogarden.js"></script>
+  <script src="spectrum.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

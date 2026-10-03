@@ -20,6 +20,19 @@
  *  arrives later through the commandFinished signal, which the page
  *  subscribes to once. This keeps the exec off the synchronous WebChannel
  *  call path.
+ *
+ *  httpFetch()/httpFetchFinished exist because page-side fetch() is a
+ *  browser request subject to CORS — fine for APIs that opt in (like
+ *  Open-Meteo), useless against ones that don't (like Radio Garden's,
+ *  which has no Access-Control-Allow-Origin at all; confirmed by actually
+ *  hitting it from the page and watching Chromium block it). QML's own
+ *  XMLHttpRequest isn't a browser page, so it isn't subject to that policy
+ *  at all — same trick as run(), applied to plain HTTP GETs instead of
+ *  shell commands. Much lower-risk than run() (no code execution), but
+ *  still worth knowing: it lets loaded HTML read from any URL, including
+ *  localhost/LAN addresses, regardless of what that target's own CORS
+ *  policy would normally allow a browser to read. Always on (unlike
+ *  run()), since it's just outbound GETs. See README.
  */
 
 import QtQuick
@@ -111,6 +124,39 @@ QtObject {
             return
         }
         execSource.connectSource(cmd)
+    }
+
+    signal httpFetchFinished(string requestId, int status, string body, string finalUrl)
+
+    property int _nextHttpId: 0
+
+    // GET (or HEAD) url, bypassing page-level CORS (see class comment
+    // above). Returns a request id synchronously; the real result arrives
+    // via httpFetchFinished. status is 0 on a network-level failure (no
+    // response at all, e.g. DNS/connection error), matching XHR
+    // convention. finalUrl is where the request landed after following
+    // any redirects — handy for resolving a redirect endpoint's real URL
+    // without caring about the (possibly empty, for HEAD) body.
+    function httpFetch(url, method) {
+        var id = "h" + (backend._nextHttpId++)
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                backend.httpFetchFinished(id, xhr.status, xhr.responseText, xhr.responseURL || url)
+            }
+        }
+        xhr.open(method || "GET", url, true)
+        xhr.setRequestHeader("Accept", "application/json")
+        // Some APIs behind bot-detection (Cloudflare etc.) 403 anything
+        // that doesn't look like a real browser. Browser-page fetch()/XHR
+        // forbid scripts from setting these; QML's XHR has no such
+        // restriction since it isn't a sandboxed page.
+        xhr.setRequestHeader("User-Agent",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/129.0.0.0 Safari/537.36")
+        xhr.setRequestHeader("Referer", "https://radio.garden/")
+        xhr.send()
+        return id
     }
 
     // QtObject has no default property, so these need explicit properties

@@ -1,5 +1,5 @@
 .weather-body {
-  gap: 8px;
+  gap: 6px;
   position: relative;
 }
 
@@ -28,13 +28,13 @@
 .wx-now {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 2px;
+  gap: 8px;
+  margin-top: 0;
 }
 
 .wx-icon {
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
 }
 
@@ -45,33 +45,33 @@
 }
 
 .wx-temp {
-  font-size: 2em;
+  font-size: 1.65em;
   font-weight: 600;
   line-height: 1;
 }
 
 .wx-condition {
-  font-size: 0.78em;
+  font-size: 0.75em;
   color: var(--text-dim);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .wx-forecast {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .wx-forecast-day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  font-size: 0.68em;
+  gap: 1px;
+  font-size: 0.66em;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 6px 2px;
+  border-radius: 7px;
+  padding: 4px 2px;
 }
 
 .wx-forecast-day .wxf-label {
@@ -81,8 +81,8 @@
 }
 
 .wx-forecast-day .wxf-icon {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
 }
 
 .wx-forecast-day .wxf-icon svg {
@@ -105,8 +105,8 @@
 
 .wx-status {
   margin-top: auto;
-  padding-top: 4px;
-  font-size: 0.62em;
+  padding-top: 2px;
+  font-size: 0.6em;
   color: var(--text-dim);
   text-align: center;
 }

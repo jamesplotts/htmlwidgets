@@ -23,14 +23,33 @@ Built and tested on Plasma 6.3.6 / Debian 13 (MX Linux 25), Wayland.
     `backend.commandFinished(cmd, stdout, stderr, exitCode)` signal.
     **Disabled by default** — gated behind a checkbox in the config
     dialog ("Allow the page to run shell commands").
-- Works as a desktop widget or in a panel.
-- Ships a sample widget (clock + CPU/mem gauges) in `sample-widgets/sample/`.
+  - `backend.httpFetch(url, method, cb)` → `cb(requestId)`, result arrives
+    via `backend.httpFetchFinished(requestId, status, body, finalUrl)`.
+    GETs (or HEADs) a URL from QML, not the page — bypasses page-level
+    CORS entirely, since QML's HTTP client isn't a browser page subject to
+    that policy. Always on (see the security note below for what that
+    means). The radio widget's `radiogarden.js` is the reference
+    consumer.
+- Works as a desktop widget or in a panel, and is resizable like any other
+  floating widget once placed.
+- Ships four widgets as a matching set (shared card chrome, see
+  `sample-widgets/common/card.css`) in `sample-widgets/`: `sample/`
+  (clock + CPU/mem gauges), `weather/`, `calendar/`, `clock/`, and `radio/`.
 
-## ⚠️ `run()` is a deliberate security hole
+## ⚠️ `run()` and `httpFetch()` expand what loaded HTML can do
 
 Any HTML file this widget loads with `run()` enabled gets shell access as
 your user. That's why it's off by default. Only point this widget at HTML
 you wrote yourself and trust, and only enable the checkbox for that widget.
+
+`httpFetch()` is lower-risk (it can only issue outbound HTTP GET/HEAD
+requests, not execute anything) but is **always on**, unlike `run()`.
+Because it bypasses CORS via QML's own HTTP client, loaded HTML can use it
+to read from URLs a browser page normally couldn't — including
+localhost/LAN addresses — regardless of whether that target's own CORS
+policy would allow a browser to read the response. It exists because some
+APIs (Radio Garden's, for one) send no CORS headers at all, so page-level
+`fetch()` can't reach them no matter how trusted the page is.
 
 ## Requirements
 
@@ -61,6 +80,17 @@ change the plasmoid source — it upgrades in place.
 This builds (first run only) and `LD_PRELOAD`s a small shim before calling
 `plasmoidviewer -a org.james.htmlwidgets`. **Don't call plasmoidviewer
 directly** — see below for why.
+
+To preview a specific widget instead of whatever's saved in the config,
+pass its `index.html` path as an extra argument — this rides
+plasmoidviewer's `externalData` CLI argument (the same mechanism real
+drag-and-drop onto the widget uses), which `main.qml` treats as an
+`htmlPath` override:
+
+```
+./tools/test-plasmoidviewer.sh -f planar -l floating \
+  ~/.local/share/html-widgets/radio/index.html
+```
 
 ## ⚠️ QtWebEngine + Plasma: a real ordering bug, and what it means for you
 
@@ -133,9 +163,14 @@ script) — same idea, different mechanism.
 
 ```
 package/org.james.htmlwidgets/   the plasmoid itself
-sample-widgets/sample/           the bundled sample HTML widget's source
+sample-widgets/common/           shared card chrome (card.css) the bundled widgets all link to
+sample-widgets/sample/           clock + CPU/mem gauges, the original demo widget
+sample-widgets/weather/          current conditions + 4-day forecast (Open-Meteo)
+sample-widgets/calendar/         month grid
+sample-widgets/clock/            round analog clock
+sample-widgets/radio/            Radio Garden player with spectrum analyzer
 tools/                           WebEngine preinit shim, test/enable/disable scripts
-install.sh                       installs the plasmoid + sample widget for the current user
+install.sh                       installs the plasmoid + all bundled widgets for the current user
 ```
 
 ## Known benign log noise
@@ -154,6 +189,50 @@ look alarming but aren't actionable:
   module itself, unrelated to anything in this plasmoid's QML.
 - `QML WebEngineProfile: Please use WebEngineProfilePrototype...` — a
   Qt 6.9+ deprecation notice; harmless on the Qt 6.8 this was built against.
+
+## The radio widget
+
+`sample-widgets/radio/` is a retro hi-fi-styled player for Radio Garden
+stations (search, favorites, a brushed-metal faceplate with a scrolling
+LCD station name, and a ~20-bar LED spectrum analyzer). A few things worth
+knowing if you touch it:
+
+- **The Radio Garden API has no CORS headers at all.** A curl request with
+  faked browser headers succeeding means nothing here — curl doesn't
+  implement CORS, browsers do. Confirmed empirically: page-level `fetch()`
+  to `radio.garden/api/...` gets flatly blocked by Chromium. Every API
+  call in `radiogarden.js` goes through `backend.httpFetch()` instead (see
+  above) — plain network GETs from QML, no CORS involved at all.
+- **Cloudflare also 403s non-browser-looking requests** to that API, so
+  `Backend.qml`'s `httpFetch()` sets a real browser `User-Agent` and
+  `Referer` — headers page-level `fetch()`/XHR are forbidden from setting
+  themselves, but QML's XHR isn't a sandboxed page and has no such
+  restriction.
+- **The listen/stream endpoint redirects, and the redirect hop itself
+  lacks CORS headers** (even though the final CDN response usually sends
+  `Access-Control-Allow-Origin: *`). `<audio crossorigin="anonymous">`
+  enforces CORS across the *whole* redirect chain, not just the final
+  response, so playing the raw `/api/ara/content/listen/{id}/channel.mp3`
+  URL directly fails to load at all. The fix: resolve to the final CDN URL
+  first (`RadioGarden.resolveStreamUrl()`, also via the bridge) and play
+  *that* — which is also the "resolved stream URL cached" behavior the
+  favorites list wants anyway.
+- **`settings.playbackRequiresUserGesture` is `false`** in `main.qml`.
+  QtWebEngine's default here is stricter than Chromium's own (which allows
+  muted autoplay); for a widget the user already chose to add to their
+  desktop, that extra gate doesn't protect against anything and could make
+  a real click on the widget's own play button mysteriously fail.
+
+**Spectrum analyzer — Web Audio won, no cava needed.** The brief said to
+try `AnalyserNode` first and fall back to piping `cava` through the bridge
+if the stream turned out CORS-tainted. Tested directly in the running
+widget (not guessed): once playback uses the resolved CDN URL (see above),
+`analyser.getByteFrequencyData()` returns real, moving values — a 2-second
+diagnostic in `spectrum.js` logged **120/120 frames with signal** on KEXP.
+So the shipped widget is Web Audio only; there's no cava integration here.
+For the record, since it was worth checking either way: `cava` isn't
+installed on this machine (`sudo apt install cava` if you want it for
+something else) — moot for this widget, since it didn't end up needed.
 
 ## Writing your own widget
 

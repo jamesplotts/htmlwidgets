@@ -1,0 +1,216 @@
+/* Structural layout only — no colors, gradients, or textures here.
+   All of that lives in theme.css so skins can be swapped independently
+   of this layout. */
+
+.radio-body {
+  padding: 10px;
+}
+
+.faceplate {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 0;
+}
+
+.lcd-screen {
+  position: relative;
+  height: 64px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.spectrum-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.lcd-marquee-wrap {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 4px;
+  height: 18px;
+  overflow: hidden;
+}
+
+.lcd-marquee {
+  position: absolute;
+  white-space: nowrap;
+  display: flex;
+}
+
+.lcd-marquee span {
+  padding-right: 40px;
+}
+
+.lcd-sub {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 4px;
+  font-size: 0.6em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.xport-btn {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.xport-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.xport-btn-play {
+  width: 36px;
+  height: 36px;
+}
+
+.xport-btn-play svg {
+  width: 16px;
+  height: 16px;
+}
+
+.xport-btn-small {
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+}
+
+.xport-btn-small svg {
+  width: 11px;
+  height: 11px;
+}
+
+.xport-btn-small + .xport-btn-small {
+  margin-left: 4px;
+}
+
+.knob-wrap {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+.volume-knob {
+  width: 100%;
+  height: 100%;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Search overlay */
+.radio-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: var(--card-radius);
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 8px;
+}
+
+.radio-overlay-header {
+  display: flex;
+  gap: 6px;
+}
+
+.radio-overlay-header input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 0.85em;
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.radio-search-status {
+  font-size: 0.68em;
+  min-height: 1em;
+}
+
+.radio-results {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.radio-result {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.75em;
+}
+
+.radio-result-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.radio-result-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-result-subtitle {
+  font-size: 0.85em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.radio-result-add {
+  appearance: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.radio-result-add svg {
+  width: 10px;
+  height: 10px;
+}
