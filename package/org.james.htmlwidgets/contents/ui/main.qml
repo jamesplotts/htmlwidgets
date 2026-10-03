@@ -75,12 +75,27 @@ PlasmoidItem {
         registeredObjects: [backend]
     }
 
+    // storageName alone auto-derives a path from the *host* application's
+    // own identity (QStandardPaths::AppDataLocation, which incorporates
+    // the running binary's app name) — meaning plasmoidviewer and
+    // plasmashell could resolve to different directories for the exact
+    // same plasmoid. Setting persistentStoragePath/cachePath explicitly,
+    // anchored to the user's home directory rather than any app-specific
+    // path, makes localStorage (e.g. the weather widget's saved city)
+    // resolve to the same place no matter which host loads this plasmoid,
+    // and removes any ambiguity about it surviving a restart.
+    readonly property string profileStoragePath:
+        root._stripFileScheme(Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation))
+        + "/.local/share/org.james.htmlwidgets/webengine-profile"
+
     WebEngineProfile {
         id: webProfile
         // Named, persistent (not off-the-record) profile: localStorage,
         // cookies and cache survive across plasmashell restarts.
         storageName: "org.james.htmlwidgets"
         offTheRecord: false
+        persistentStoragePath: root.profileStoragePath
+        cachePath: root.profileStoragePath + "/cache"
         httpCacheType: WebEngineProfile.DiskHttpCache
         persistentCookiesPolicy: WebEngineProfile.AllowPersistentCookies
     }
