@@ -20,7 +20,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 0;
 }
 
 .lcd-screen {
@@ -32,13 +33,17 @@
 
 /* Two separate recessed readouts, stacked — station name/subtitle on top,
    spectrum analyzer in its own box below, so the bars never draw over the
-   text. */
+   text. lcd-main stays a fixed height (the text doesn't benefit from more
+   room); lcd-spectrum grows to fill whatever extra height the widget gets
+   resized to, so the bars actually use the space instead of leaving it
+   blank. */
 .lcd-main {
   height: 38px;
 }
 
 .lcd-spectrum {
-  height: 26px;
+  flex: 1;
+  min-height: 20px;
 }
 
 .spectrum-canvas {
@@ -83,6 +88,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .xport-btn {
