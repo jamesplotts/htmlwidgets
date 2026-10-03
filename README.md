@@ -7,6 +7,8 @@ page's JavaScript.
 
 Built and tested on Plasma 6.3.6 / Debian 13 (MX Linux 25), Wayland.
 
+Published on the KDE Store: https://www.opendesktop.org/p/2377033/
+
 ## What it does
 
 - Loads a local HTML file you choose in the widget's config dialog
@@ -171,7 +173,23 @@ sample-widgets/clock/            round analog clock
 sample-widgets/radio/            Radio Garden player with spectrum analyzer
 tools/                           WebEngine preinit shim, test/enable/disable scripts
 install.sh                       installs the plasmoid + all bundled widgets for the current user
+dist/                             built .plasmoid package for publishing (gitignored, built on demand)
 ```
+
+## Publishing an update
+
+```
+./tools/build-plasmoid-package.sh
+```
+
+Syncs `sample-widgets/` into the package (same as `install.sh`) and zips
+it into `dist/org.james.htmlwidgets.plasmoid` — a `.plasmoid` file is just
+the package directory's contents zipped with `metadata.json` at the root,
+not nested inside another folder. That's the file to upload as a new file
+version on the [KDE Store listing](https://www.opendesktop.org/p/2377033/)
+(Edit Product → Files → Add File(s)), alongside `dist/README.md` if its
+content changed too. Bump the version number both in the upload form and
+in `metadata.json`'s `KPlugin.Version`.
 
 ## Known benign log noise
 

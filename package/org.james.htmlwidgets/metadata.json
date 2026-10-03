@@ -13,7 +13,7 @@
         "Id": "org.james.htmlwidgets",
         "License": "MIT",
         "Name": "HTML Widget Host",
-        "Version": "1.0",
+        "Version": "1.0.0",
         "Website": "https://github.com/jamesplotts/htmlwidgets"
     },
     "X-Plasma-API-Minimum-Version": "6.0"
