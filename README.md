@@ -52,20 +52,81 @@ This installs the plasmoid with `kpackagetool6` and copies the sample
 widget to `~/.local/share/html-widgets/sample/`. Re-run it any time you
 change the plasmoid source — it upgrades in place.
 
-Add the widget from Plasma's "Add Widgets" panel ("HTML Widget Host"), or
-test it standalone without touching your live session:
+## Testing with plasmoidviewer
 
 ```
-plasmoidviewer -a org.james.htmlwidgets
+./tools/test-plasmoidviewer.sh -f planar -l floating
 ```
+
+This builds (first run only) and `LD_PRELOAD`s a small shim before calling
+`plasmoidviewer -a org.james.htmlwidgets`. **Don't call plasmoidviewer
+directly** — see below for why.
+
+## ⚠️ QtWebEngine + Plasma: a real ordering bug, and what it means for you
+
+QtWebEngine has a hard requirement: `QtWebEngineQuick::initialize()` must
+run on the main thread *before* `QGuiApplication` is constructed. Plasma's
+QML engine, though, resolves `import QtWebEngine` (and `dlopen()`s its
+plugin) lazily on a background thread the first time a plasmoid using it is
+loaded — by which point `QGuiApplication` already exists and the loader
+thread isn't the main thread either. QtWebEngine hard-aborts the process
+when that happens:
+
+```
+QtWebEngineQuick::initialize() must be called from the Qt gui thread.
+```
+
+This isn't a bug in this plasmoid's QML — it reproduces with any
+QtWebEngine-using plasmoid, in both `plasmoidviewer` and `plasmashell`,
+because neither host knows in advance that it needs to initialize
+WebEngine before anything else touches it.
+
+**The fix:** `tools/webengine_preinit.cpp` is a tiny shared library whose
+constructor calls `QtWebEngineQuick::initialize()` — a shared library's
+constructor runs during dynamic linking, before `main()`, which is the
+earliest point `initialize()` can legally run. `LD_PRELOAD`ing it forces
+that to happen before Plasma (or anything else) gets a chance to trip the
+lazy/background path. `tools/test-plasmoidviewer.sh` does this for you for
+testing.
+
+**What this means for actually using the widget day-to-day:** adding
+`org.james.htmlwidgets` through Plasma's "Add Widgets" into your *normal,
+already-running* `plasmashell` will hit the same abort and crash
+plasmashell, because that process was started without the shim preloaded.
+Making it work there means `plasmashell` itself needs to launch with
+`LD_PRELOAD=/path/to/libwebengine_preinit.so` set — e.g. via a
+`systemd --user` environment override or an `environment.d` file — which
+touches your session startup and needs a plasmashell restart to take
+effect. This repo doesn't set that up automatically; it's a session-wide
+change outside what `install.sh` should be doing unattended. If you want
+to run this widget live, decide how you want that env var applied to
+plasmashell's startup, and restart plasmashell deliberately when ready.
 
 ## Repo layout
 
 ```
 package/org.james.htmlwidgets/   the plasmoid itself
 sample-widgets/sample/           the bundled sample HTML widget's source
-install.sh                       installs both of the above for the current user
+tools/                           WebEngine preinit shim + plasmoidviewer test wrapper
+install.sh                       installs the plasmoid + sample widget for the current user
 ```
+
+## Known benign log noise
+
+A few lines show up in `plasmoidviewer`/`journalctl --user` output that
+look alarming but aren't actionable:
+
+- `Storage name is empty. Cannot change profile from off-the-record to
+  disk-based behavior until a proper storage name is set` / `Switching to
+  disk-based behavior` — a one-time ordering quirk at startup, before the
+  `storageName` property binding has been applied to the freshly-created
+  `WebEngineProfile`. It resolves itself immediately, before the page
+  loads; the profile is disk-based (persistent) throughout actual use.
+- `Property 'valid'' of object 'Plasma5Support::DataSource' has no notify
+  signal...` — a long-standing quirk of the `Plasma5Support` compatibility
+  module itself, unrelated to anything in this plasmoid's QML.
+- `QML WebEngineProfile: Please use WebEngineProfilePrototype...` — a
+  Qt 6.9+ deprecation notice; harmless on the Qt 6.8 this was built against.
 
 ## Writing your own widget
 

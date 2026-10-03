@@ -1,6 +1,6 @@
 /*
  *  SPDX-FileCopyrightText: 2026 James
- *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  SPDX-License-Identifier: MIT
  */
 
 import QtQuick
@@ -18,10 +18,10 @@ KCM.SimpleKCM {
     property alias cfg_htmlPath: pathField.text
     property alias cfg_enableRun: enableRunCheckBox.checked
 
-    // StandardPaths.writableLocation isn't reachable from plain QML without
-    // a Qt.labs.platform import; use it only for the placeholder/default hint.
+    // StandardPaths.writableLocation() returns a file:// URL; strip the
+    // scheme so this reads as a plain path in the placeholder/hint text.
     readonly property string defaultHtmlPath:
-        Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation)
+        Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation).toString().replace(/^file:\/\//, "")
         + "/.local/share/html-widgets/sample/index.html"
 
     Kirigami.FormLayout {

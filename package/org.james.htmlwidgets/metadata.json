@@ -11,7 +11,7 @@
         "Description": "Hosts a local HTML5/JS widget in a transparent QtWebEngine view, with a bridge exposing basic system stats and optional shell command execution to the page.",
         "Icon": "text-html",
         "Id": "org.james.htmlwidgets",
-        "License": "GPL-2.0-or-later",
+        "License": "MIT",
         "Name": "HTML Widget Host",
         "Version": "1.0",
         "Website": "https://github.com/jamesplotts/htmlwidgets"

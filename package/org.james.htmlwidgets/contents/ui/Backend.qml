@@ -1,16 +1,25 @@
 /*
  *  SPDX-FileCopyrightText: 2026 James
- *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  SPDX-License-Identifier: MIT
  *
  *  The object exposed to page JavaScript via QWebChannel as "backend".
- *  cpu()/memory()/uptime() are synchronous (read straight from /proc) and
- *  are called from the page as backend.cpu(function(result){...}) per the
- *  usual qwebchannel.js convention.
  *
- *  run() is fire-and-forget: it kicks off the command via Plasma's
- *  "executable" data engine and the real result arrives later through the
- *  commandFinished signal, which the page subscribes to once. This keeps
- *  the long-running exec off the synchronous WebChannel call path.
+ *  cpu()/memory()/uptime() are synchronous getters over cached state that a
+ *  background poll refreshes every couple of seconds. They're called from
+ *  the page as backend.cpu(function(result){...}) per the usual
+ *  qwebchannel.js convention.
+ *
+ *  Reading /proc directly via QML's XMLHttpRequest would be simpler, but
+ *  QtWebEngine/QML disables local-file XHR reads unless the environment
+ *  variable QML_XHR_ALLOW_FILE_READ=1 is set — not something we can expect
+ *  an end user's session to have. So instead everything, including these
+ *  read-only stats, goes through Plasma's "executable" data engine, same
+ *  as run().
+ *
+ *  run() itself is fire-and-forget: it kicks off the command and the result
+ *  arrives later through the commandFinished signal, which the page
+ *  subscribes to once. This keeps the exec off the synchronous WebChannel
+ *  call path.
  */
 
 import QtQuick
@@ -28,24 +37,28 @@ QtObject {
 
     signal commandFinished(string cmd, string stdout, string stderr, int exitCode)
 
+    readonly property string _cpuCmd: "cat /proc/stat"
+    readonly property string _memCmd: "cat /proc/meminfo"
+    readonly property string _uptimeCmd: "cat /proc/uptime"
+    readonly property int _pollIntervalMs: 2000
+
     property var _prevCpu: null
+    property var _cpuCache: ({ percent: 0 })
+    property var _memCache: ({ totalMb: 0, usedMb: 0, availableMb: 0, percent: 0 })
+    property var _uptimeCache: ({ seconds: 0 })
 
-    function _readFile(path) {
-        var xhr = new XMLHttpRequest()
-        xhr.open("GET", "file://" + path, false) // synchronous local read
-        xhr.send()
-        return xhr.responseText
-    }
+    function cpu() { return backend._cpuCache }
+    function memory() { return backend._memCache }
+    function uptime() { return backend._uptimeCache }
 
-    // Returns { percent } — percentage of CPU busy since the previous call.
-    // The first call has nothing to diff against, so it returns 0.
-    function cpu() {
-        var line = backend._readFile("/proc/stat").split("\n")[0]
-        var parts = line.trim().split(/\s+/).slice(1).map(Number)
+    function _updateCpu(text) {
+        var line = (text.split("\n")[0] || "").trim()
+        if (!line) return
+        var parts = line.split(/\s+/).slice(1).map(Number)
         var idle = parts[3] + parts[4] // idle + iowait
         var total = parts.reduce(function (a, b) { return a + b }, 0)
 
-        var percent = 0
+        var percent = backend._cpuCache.percent
         if (backend._prevCpu) {
             var deltaIdle = idle - backend._prevCpu.idle
             var deltaTotal = total - backend._prevCpu.total
@@ -54,12 +67,10 @@ QtObject {
             }
         }
         backend._prevCpu = { idle: idle, total: total }
-        return { percent: percent }
+        backend._cpuCache = { percent: percent }
     }
 
-    // Returns { totalMb, usedMb, availableMb, percent }.
-    function memory() {
-        var text = backend._readFile("/proc/meminfo")
+    function _updateMem(text) {
         var kv = {}
         text.split("\n").forEach(function (line) {
             var m = line.match(/^(\w+):\s+(\d+)/)
@@ -70,7 +81,7 @@ QtObject {
         var totalKb = kv.MemTotal || 0
         var availKb = kv.MemAvailable !== undefined ? kv.MemAvailable : (kv.MemFree || 0)
         var usedKb = totalKb - availKb
-        return {
+        backend._memCache = {
             totalMb: totalKb / 1024,
             usedMb: usedKb / 1024,
             availableMb: availKb / 1024,
@@ -78,10 +89,9 @@ QtObject {
         }
     }
 
-    // Returns { seconds }.
-    function uptime() {
-        var text = backend._readFile("/proc/uptime")
-        return { seconds: parseFloat(text.trim().split(/\s+/)[0]) }
+    function _updateUptime(text) {
+        var seconds = parseFloat((text.trim().split(/\s+/) || ["0"])[0])
+        backend._uptimeCache = { seconds: isNaN(seconds) ? 0 : seconds }
     }
 
     // Runs a shell command and reports back via commandFinished(cmd, stdout,
@@ -103,8 +113,39 @@ QtObject {
         execSource.connectSource(cmd)
     }
 
-    P5Support.DataSource {
-        id: execSource
+    // QtObject has no default property, so these need explicit properties
+    // to attach (unlike Item-derived types, which could just nest them).
+    //
+    // Two separate DataSources because `interval` applies to every source
+    // connected on a DataSource: statsSource polls its three /proc reads
+    // on a timer forever, while execSource runs one-shot run() commands
+    // (default interval 0) and disconnects each as soon as it answers.
+    property P5Support.DataSource statsSource: P5Support.DataSource {
+        engine: "executable"
+        interval: backend._pollIntervalMs
+        onNewData: function (sourceName, data) {
+            var stdout = data["stdout"] || ""
+            switch (sourceName) {
+            case backend._cpuCmd:
+                backend._updateCpu(stdout)
+                break
+            case backend._memCmd:
+                backend._updateMem(stdout)
+                break
+            case backend._uptimeCmd:
+                backend._updateUptime(stdout)
+                break
+            }
+        }
+
+        Component.onCompleted: {
+            connectSource(backend._cpuCmd)
+            connectSource(backend._memCmd)
+            connectSource(backend._uptimeCmd)
+        }
+    }
+
+    property P5Support.DataSource execSource: P5Support.DataSource {
         engine: "executable"
         onNewData: function (sourceName, data) {
             backend.commandFinished(
