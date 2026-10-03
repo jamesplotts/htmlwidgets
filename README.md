@@ -93,21 +93,48 @@ testing.
 `org.james.htmlwidgets` through Plasma's "Add Widgets" into your *normal,
 already-running* `plasmashell` will hit the same abort and crash
 plasmashell, because that process was started without the shim preloaded.
-Making it work there means `plasmashell` itself needs to launch with
-`LD_PRELOAD=/path/to/libwebengine_preinit.so` set — e.g. via a
-`systemd --user` environment override or an `environment.d` file — which
-touches your session startup and needs a plasmashell restart to take
-effect. This repo doesn't set that up automatically; it's a session-wide
-change outside what `install.sh` should be doing unattended. If you want
-to run this widget live, decide how you want that env var applied to
-plasmashell's startup, and restart plasmashell deliberately when ready.
+
+### Enabling it for real
+
+```
+./tools/enable-live.sh
+```
+
+On a systemd-managed Plasma session (check with `systemctl --user status
+plasma-plasmashell.service` — this is the default on most Plasma 6
+distros, including Debian/MX), this:
+
+1. Builds and installs the shim to `~/.local/share/html-widgets/` (outside
+   this repo, so it keeps working if you move or delete this checkout).
+2. Writes a `systemd --user` drop-in
+   (`~/.config/systemd/user/plasma-plasmashell.service.d/`) that sets
+   `LD_PRELOAD` for **only** the `plasma-plasmashell.service` unit — not
+   your whole graphical session, not other apps.
+
+It does **not** restart plasmashell — do that yourself when ready:
+
+```
+systemctl --user restart plasma-plasmashell.service
+```
+
+Your panels/desktop will flicker and reload, same as Plasma's normal crash
+recovery. After that, `org.james.htmlwidgets` works from "Add Widgets"
+like any other widget. This does mean Qt WebEngine's libraries load into
+plasmashell at every startup from then on (a one-time ~tens-of-MB memory
+bump), whether or not an HTML widget is actually on your desktop.
+
+To undo: `./tools/disable-live.sh`, then restart plasmashell again.
+
+If your Plasma session *isn't* systemd-managed, the equivalent is getting
+`LD_PRELOAD` set for however plasmashell gets launched (e.g. an autostart
+script) — same idea, different mechanism.
 
 ## Repo layout
 
 ```
 package/org.james.htmlwidgets/   the plasmoid itself
 sample-widgets/sample/           the bundled sample HTML widget's source
-tools/                           WebEngine preinit shim + plasmoidviewer test wrapper
+tools/                           WebEngine preinit shim, test/enable/disable scripts
 install.sh                       installs the plasmoid + sample widget for the current user
 ```
 
