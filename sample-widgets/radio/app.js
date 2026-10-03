@@ -13,12 +13,17 @@
   var prevBtn = document.getElementById("prevBtn");
   var nextBtn = document.getElementById("nextBtn");
   var favBtn = document.getElementById("favBtn");
+  var favoritesListBtn = document.getElementById("favoritesListBtn");
   var searchBtn = document.getElementById("searchBtn");
   var closeSearchBtn = document.getElementById("closeSearchBtn");
   var searchOverlay = document.getElementById("searchOverlay");
   var searchInput = document.getElementById("searchInput");
   var searchStatus = document.getElementById("searchStatus");
   var searchResults = document.getElementById("searchResults");
+  var favoritesOverlay = document.getElementById("favoritesOverlay");
+  var closeFavoritesBtn = document.getElementById("closeFavoritesBtn");
+  var favoritesStatus = document.getElementById("favoritesStatus");
+  var favoritesList = document.getElementById("favoritesList");
   var marquee = document.getElementById("marquee");
   var marqueeText = document.getElementById("marqueeText");
   var lcdSub = document.getElementById("lcdSub");
@@ -164,14 +169,18 @@
     setMarquee(station.title);
     setSub(station.subtitle || "");
     updateFavButton();
-    resizeCanvas();
     ensureSpectrum();
 
     function startWithUrl(src) {
       player.src = src;
       player.play().then(function () {
         setPlayingUI(true);
+        // Measure *after* unhiding, not before — getBoundingClientRect()
+        // on a display:none element returns an all-zero rect, which would
+        // otherwise zero out the canvas's actual drawing buffer before it
+        // ever gets shown.
         spectrumCanvas.classList.remove("hidden");
+        resizeCanvas();
         Spectrum.start();
       }).catch(function (err) {
         console.log("[radio] playback failed: " + err.message);
@@ -256,9 +265,70 @@
   prevBtn.addEventListener("click", function () { stepFavorite(-1); });
   nextBtn.addEventListener("click", function () { stepFavorite(1); });
 
+  // ---------- favorites list overlay ----------
+
+  function openFavoritesList() {
+    closeSearch();
+    favoritesOverlay.classList.remove("hidden");
+    renderFavoritesList();
+  }
+
+  function closeFavoritesList() {
+    favoritesOverlay.classList.add("hidden");
+  }
+
+  function renderFavoritesList() {
+    favoritesStatus.textContent = favorites.length ? "" : "No favorites yet — add one from search.";
+    favoritesList.innerHTML = "";
+    var frag = document.createDocumentFragment();
+
+    favorites.forEach(function (fav) {
+      var row = document.createElement("div");
+      row.className = "radio-result";
+
+      var info = document.createElement("div");
+      info.className = "radio-result-info";
+      var title = document.createElement("div");
+      title.className = "radio-result-title";
+      title.textContent = fav.title;
+      var subtitle = document.createElement("div");
+      subtitle.className = "radio-result-subtitle";
+      subtitle.textContent = fav.subtitle || "";
+      info.appendChild(title);
+      info.appendChild(subtitle);
+      row.appendChild(info);
+
+      var removeBtn = document.createElement("button");
+      removeBtn.className = "radio-result-remove";
+      removeBtn.title = "Remove from favorites";
+      removeBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      removeBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        favorites = favorites.filter(function (f) { return f.id !== fav.id; });
+        saveFavorites();
+        updateFavButton();
+        renderFavoritesList();
+      });
+      row.appendChild(removeBtn);
+
+      row.addEventListener("click", function () {
+        play(fav);
+        closeFavoritesList();
+      });
+
+      frag.appendChild(row);
+    });
+
+    favoritesList.appendChild(frag);
+  }
+
+  favoritesListBtn.addEventListener("click", openFavoritesList);
+  closeFavoritesBtn.addEventListener("click", closeFavoritesList);
+
   // ---------- search overlay ----------
 
   function openSearch() {
+    closeFavoritesList();
     searchOverlay.classList.remove("hidden");
     searchInput.value = "";
     searchStatus.textContent = "";

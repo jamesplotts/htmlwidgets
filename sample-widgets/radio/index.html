@@ -11,14 +11,19 @@
   <div class="card">
     <div class="card__body radio-body">
       <div class="faceplate">
-        <div class="lcd-screen">
-          <canvas id="spectrum" class="spectrum-canvas"></canvas>
-          <div class="lcd-marquee-wrap">
-            <div id="marquee" class="lcd-marquee">
-              <span id="marqueeText">Select a station</span>
+        <div class="lcd-stack">
+          <div class="lcd-screen lcd-main">
+            <div class="lcd-marquee-wrap">
+              <div id="marquee" class="lcd-marquee">
+                <span id="marqueeText">Select a station</span>
+              </div>
             </div>
+            <div id="lcdSub" class="lcd-sub"></div>
           </div>
-          <div id="lcdSub" class="lcd-sub"></div>
+
+          <div class="lcd-screen lcd-spectrum">
+            <canvas id="spectrum" class="spectrum-canvas"></canvas>
+          </div>
         </div>
 
         <div class="controls-row">
@@ -55,6 +60,10 @@
             <svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 16.5 14.5 18.5 21.5 12 17.5 5.5 21.5 7.5 14.5 2 9.5 9 9"/></svg>
           </button>
 
+          <button id="favoritesListBtn" class="xport-btn xport-btn-small" aria-label="View favorites" title="View favorites">
+            <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+
           <button id="searchBtn" class="xport-btn xport-btn-small" aria-label="Search stations" title="Search stations">
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
@@ -71,6 +80,17 @@
       </div>
       <div id="searchStatus" class="radio-search-status"></div>
       <div id="searchResults" class="radio-results"></div>
+    </div>
+
+    <div id="favoritesOverlay" class="radio-overlay hidden">
+      <div class="radio-overlay-header">
+        <div class="radio-overlay-title radio-overlay-title-flex">Favorites</div>
+        <button id="closeFavoritesBtn" class="icon-btn" aria-label="Close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="favoritesStatus" class="radio-search-status"></div>
+      <div id="favoritesList" class="radio-results"></div>
     </div>
   </div>
 

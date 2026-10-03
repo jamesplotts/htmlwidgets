@@ -72,7 +72,9 @@
 }
 
 #searchBtn svg,
-#closeSearchBtn svg {
+#closeSearchBtn svg,
+#favoritesListBtn svg,
+#closeFavoritesBtn svg {
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
@@ -147,4 +149,24 @@
 
 .radio-result-add:hover {
   background: rgba(255, 255, 255, 0.26);
+}
+
+.radio-overlay-title-flex {
+  color: var(--text-color);
+}
+
+.radio-result-remove {
+  background: rgba(224, 75, 63, 0.18);
+  color: #ff8a80;
+}
+
+.radio-result-remove svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.radio-result-remove:hover {
+  background: rgba(224, 75, 63, 0.32);
 }

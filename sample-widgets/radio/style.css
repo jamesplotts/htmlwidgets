@@ -16,12 +16,29 @@
   min-height: 0;
 }
 
+.lcd-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .lcd-screen {
   position: relative;
-  height: 64px;
   border-radius: 6px;
   overflow: hidden;
   flex-shrink: 0;
+}
+
+/* Two separate recessed readouts, stacked — station name/subtitle on top,
+   spectrum analyzer in its own box below, so the bars never draw over the
+   text. */
+.lcd-main {
+  height: 38px;
+}
+
+.lcd-spectrum {
+  height: 26px;
 }
 
 .spectrum-canvas {
@@ -152,6 +169,32 @@
   font-size: 0.85em;
   padding: 6px 8px;
   border-radius: 8px;
+}
+
+.radio-overlay-title-flex {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.radio-result-remove {
+  appearance: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.radio-result-remove svg {
+  width: 10px;
+  height: 10px;
 }
 
 .radio-search-status {
