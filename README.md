@@ -11,8 +11,9 @@ Published on the KDE Store: https://www.opendesktop.org/p/2377033/
 
 ## What it does
 
-- Loads a local HTML file you choose in the widget's config dialog
-  (default: `~/.local/share/html-widgets/sample/index.html`).
+- Loads a local HTML file you choose in the widget's config dialog — pick
+  from the dropdown of bundled + your own custom widgets, or point it
+  anywhere (default: the bundled sample widget).
 - Transparent background, so the HTML fully controls its own look.
 - Persistent (not off-the-record) WebEngine profile — `localStorage`
   survives plasmashell restarts.
@@ -34,9 +35,10 @@ Published on the KDE Store: https://www.opendesktop.org/p/2377033/
     consumer.
 - Works as a desktop widget or in a panel, and is resizable like any other
   floating widget once placed.
-- Ships four widgets as a matching set (shared card chrome, see
+- Ships six widgets as a matching set (shared card chrome, see
   `sample-widgets/common/card.css`) in `sample-widgets/`: `sample/`
-  (clock + CPU/mem gauges), `weather/`, `calendar/`, `clock/`, and `radio/`.
+  (clock + CPU/mem gauges), `weather/`, `calendar/`, `clock/`, `radio/`,
+  and `camera/` (live HLS video, e.g. a Shinobi NVR monitor).
 
 ## ⚠️ `run()` and `httpFetch()` expand what loaded HTML can do
 
@@ -171,6 +173,7 @@ sample-widgets/weather/          current conditions + 4-day forecast (Open-Meteo
 sample-widgets/calendar/         month grid
 sample-widgets/clock/            round analog clock
 sample-widgets/radio/            Radio Garden player with spectrum analyzer
+sample-widgets/camera/           live HLS video player (vendors hls.js)
 tools/                           WebEngine preinit shim, test/enable/disable scripts
 install.sh                       installs the plasmoid + all bundled widgets for the current user
 dist/                             built .plasmoid package for publishing (gitignored, built on demand)
@@ -251,6 +254,42 @@ So the shipped widget is Web Audio only; there's no cava integration here.
 For the record, since it was worth checking either way: `cava` isn't
 installed on this machine (`sudo apt install cava` if you want it for
 something else) — moot for this widget, since it didn't end up needed.
+
+## The camera widget
+
+`sample-widgets/camera/` plays a live HLS (`.m3u8`) video stream — built
+and tested against a [Shinobi](https://shinobi.video/) NVR monitor, but
+works with any HLS source. A few things worth knowing:
+
+- **No bridge needed, unlike weather/radio.** Confirmed by inspecting the
+  actual network requests Shinobi's own dashboard makes, then checking the
+  response headers directly: both the `.m3u8` playlist and the `.ts`
+  segments send `Access-Control-Allow-Origin: *`. So this one talks to the
+  stream directly via `fetch()`/`XMLHttpRequest` (inside `hls.js`, not our
+  code) — no `backend.httpFetch()` detour required. If you point this at
+  a different HLS source that *doesn't* send permissive CORS, you'd hit
+  the same wall the radio widget did and need the bridge.
+- **Chromium has no native HLS support in `<video>`**, so this vendors
+  [hls.js](https://github.com/video-dev/hls.js) (`hls.min.js`,
+  Apache-2.0, license text in `HLS_JS_LICENSE`) to demux the stream into
+  MediaSource Extensions. Deliberately vendored rather than loaded from a
+  CDN — a widget for viewing a *local* camera shouldn't need internet
+  access to function.
+- **Config is a label + stream URL** per camera (gear-equivalent "manage
+  cameras" overlay, same list/add/remove pattern as radio's favorites).
+  For Shinobi specifically, the URL is
+  `http://<host>:8082/<api_key>/hls/<group_key>/<monitor_id>/s.m3u8` —
+  grab it from your Shinobi dashboard's own network requests (or Monitor
+  Settings) once per camera.
+- **Resource cost is real and worth knowing going in.** Unlike every
+  other widget here, this one continuously decodes live video — actual
+  CPU/GPU load and bandwidth for as long as it's playing. The stop button
+  fully tears down the `hls.js` instance and detaches the `<video>` src
+  (not just paused) specifically so an idle camera widget costs nothing.
+- Built-in reconnect: `hls.js`'s error events are wired up to retry on
+  network hiccups (`startLoad()`) and recover from decode errors
+  (`recoverMediaError()`) rather than just dying — reasonable to expect
+  for something meant to sit on a desktop for days.
 
 ## Writing your own widget
 

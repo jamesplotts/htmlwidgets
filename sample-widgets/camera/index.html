@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Camera</title>
+<link rel="stylesheet" href="../common/card.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="card__body camera-body">
+      <div class="video-wrap" id="videoWrap">
+        <video id="player" muted playsinline></video>
+
+        <div class="video-placeholder" id="placeholder">
+          <svg viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <div id="placeholderText">No camera configured</div>
+        </div>
+
+        <div class="top-bar">
+          <div class="cam-label" id="camLabel"></div>
+          <div class="status-dot" id="statusDot" title="Connection status"></div>
+        </div>
+
+        <div class="controls-bar">
+          <button id="prevBtn" class="icon-btn" aria-label="Previous camera" title="Previous camera">
+            <svg viewBox="0 0 24 24"><polygon points="18 4 18 20 7 12"/><rect x="4" y="4" width="2" height="16"/></svg>
+          </button>
+          <button id="playBtn" class="icon-btn" aria-label="Play/Stop" title="Play/Stop">
+            <svg id="playIcon" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20"/></svg>
+            <svg id="stopIcon" viewBox="0 0 24 24" class="hidden"><rect x="6" y="6" width="12" height="12"/></svg>
+          </button>
+          <button id="nextBtn" class="icon-btn" aria-label="Next camera" title="Next camera">
+            <svg viewBox="0 0 24 24"><polygon points="6 4 6 20 17 12"/><rect x="18" y="4" width="2" height="16"/></svg>
+          </button>
+          <button id="muteBtn" class="icon-btn" aria-label="Mute/Unmute" title="Mute/Unmute">
+            <svg id="mutedIcon" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            <svg id="unmutedIcon" viewBox="0 0 24 24" class="hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          </button>
+          <button id="manageBtn" class="icon-btn icon-btn-end" aria-label="Manage cameras" title="Manage cameras">
+            <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="manageOverlay" class="cam-overlay hidden">
+      <div class="cam-overlay-header">
+        <div class="cam-overlay-title">Cameras</div>
+        <button id="closeManageBtn" class="icon-btn" aria-label="Close">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div id="camList" class="cam-list"></div>
+
+      <div class="cam-add-row">
+        <input id="newLabel" type="text" placeholder="Label (e.g. Front Cam)" spellcheck="false" autocomplete="off">
+        <input id="newUrl" type="text" placeholder="Stream URL (.m3u8)" spellcheck="false" autocomplete="off">
+        <button id="addCamBtn" class="cam-btn">Add</button>
+      </div>
+      <div id="addError" class="cam-error"></div>
+    </div>
+  </div>
+
+  <script src="hls.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
