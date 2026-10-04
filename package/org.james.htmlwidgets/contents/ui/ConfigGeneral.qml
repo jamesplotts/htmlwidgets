@@ -18,6 +18,7 @@ KCM.SimpleKCM {
 
     property alias cfg_htmlPath: pathField.text
     property alias cfg_enableRun: enableRunCheckBox.checked
+    property alias cfg_enableHttpFetch: enableHttpFetchCheckBox.checked
 
     // [{name, path}], populated by scanSource below.
     property var discoveredWidgets: []
@@ -110,6 +111,28 @@ KCM.SimpleKCM {
                 "Off by default. When enabled, any HTML file this widget loads can execute " +
                 "arbitrary commands on your account via the bridge's run() call. Only enable " +
                 "this for widgets you wrote and trust.")
+        }
+
+        Item {
+            Kirigami.FormData.isSection: false
+        }
+
+        CheckBox {
+            id: enableHttpFetchCheckBox
+            Kirigami.FormData.label: i18nc("@label:checkbox", "Networking:")
+            text: i18nc("@option:check", "Allow the page to make network requests (httpFetch())")
+        }
+
+        Label {
+            Layout.fillWidth: true
+            wrapMode: Text.WordWrap
+            font.italic: true
+            text: i18nc("@info",
+                "Off by default. When enabled, any HTML file this widget loads can read from " +
+                "any URL — including localhost/LAN addresses like your router or NAS — " +
+                "regardless of that target's own CORS policy. The bundled radio widget needs " +
+                "this to reach Radio Garden's API. Only enable this for widgets you wrote and " +
+                "trust, or bundled ones that document needing it.")
         }
     }
 

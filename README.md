@@ -30,9 +30,11 @@ Published on the KDE Store: https://www.opendesktop.org/p/2377033/
     via `backend.httpFetchFinished(requestId, status, body, finalUrl)`.
     GETs (or HEADs) a URL from QML, not the page — bypasses page-level
     CORS entirely, since QML's HTTP client isn't a browser page subject to
-    that policy. Always on (see the security note below for what that
-    means). The radio widget's `radiogarden.js` is the reference
-    consumer.
+    that policy. **Disabled by default** — gated behind a checkbox in the
+    config dialog ("Allow the page to make network requests"), same
+    pattern as `run()` (see the security note below for what that means).
+    The radio widget's `radiogarden.js` is the reference consumer, and
+    needs this checkbox enabled to search/play stations.
 - Works as a desktop widget or in a panel, and is resizable like any other
   floating widget once placed.
 - Ships six widgets as a matching set (shared card chrome, see
@@ -47,13 +49,17 @@ your user. That's why it's off by default. Only point this widget at HTML
 you wrote yourself and trust, and only enable the checkbox for that widget.
 
 `httpFetch()` is lower-risk (it can only issue outbound HTTP GET/HEAD
-requests, not execute anything) but is **always on**, unlike `run()`.
-Because it bypasses CORS via QML's own HTTP client, loaded HTML can use it
-to read from URLs a browser page normally couldn't — including
-localhost/LAN addresses — regardless of whether that target's own CORS
-policy would allow a browser to read the response. It exists because some
-APIs (Radio Garden's, for one) send no CORS headers at all, so page-level
-`fetch()` can't reach them no matter how trusted the page is.
+requests, not execute anything), but is **off by default too**, gated
+behind its own checkbox — same opt-in pattern as `run()`. Because it
+bypasses CORS via QML's own HTTP client, loaded HTML can use it to read
+from URLs a browser page normally couldn't — including localhost/LAN
+addresses like your router or NAS — regardless of whether that target's
+own CORS policy would allow a browser to read the response. It exists
+because some APIs (Radio Garden's, for one) send no CORS headers at all,
+so page-level `fetch()` can't reach them no matter how trusted the page
+is. **The bundled radio widget needs this checkbox enabled** to
+search/play stations; with it off, `httpFetch()` calls fail the same way
+a real network error would (status `0`).
 
 ## Requirements
 
@@ -69,8 +75,13 @@ upgrade the desktop (e.g. to a Plasma-6 distro), not to troubleshoot the
 widget itself.
 
 ```
-sudo apt install plasma-sdk   # for plasmoidviewer, kpackagetool6 testing
+sudo apt install plasma-sdk   # for plasmoidviewer (testing only)
 ```
+
+`kpackagetool6` (used by `install.sh`) is its own package, not part of
+`plasma-sdk` — it's pulled in by `plasma-widgets-addons`, which a stock
+Plasma 6 desktop already has. Installing via the KDE Store / Discover
+doesn't need `kpackagetool6` at all.
 
 These are needed too, but are already present on a stock Plasma 6.3 desktop
 install: `qml6-module-qtwebengine`, `qml6-module-qtwebchannel`,

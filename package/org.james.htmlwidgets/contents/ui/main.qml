@@ -74,6 +74,7 @@ PlasmoidItem {
     Backend {
         id: backend
         runEnabled: Plasmoid.configuration.enableRun
+        fetchEnabled: Plasmoid.configuration.enableHttpFetch
     }
 
     WebChannel {

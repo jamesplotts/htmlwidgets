@@ -31,8 +31,9 @@
  *  shell commands. Much lower-risk than run() (no code execution), but
  *  still worth knowing: it lets loaded HTML read from any URL, including
  *  localhost/LAN addresses, regardless of what that target's own CORS
- *  policy would normally allow a browser to read. Always on (unlike
- *  run()), since it's just outbound GETs. See README.
+ *  policy would normally allow a browser to read. Gated behind the same
+ *  opt-in pattern as run() — off by default, enabled per-widget in the
+ *  config dialog. See README.
  */
 
 import QtQuick
@@ -47,6 +48,10 @@ QtObject {
     // Bound from main.qml to plasmoid.configuration.enableRun. False
     // (disabled) until the user explicitly opts in via the config dialog.
     property bool runEnabled: false
+
+    // Bound from main.qml to plasmoid.configuration.enableHttpFetch. Same
+    // opt-in pattern as runEnabled.
+    property bool fetchEnabled: false
 
     signal commandFinished(string cmd, string stdout, string stderr, int exitCode)
 
@@ -139,6 +144,15 @@ QtObject {
     // without caring about the (possibly empty, for HEAD) body.
     function httpFetch(url, method) {
         var id = "h" + (backend._nextHttpId++)
+        if (!backend.fetchEnabled) {
+            Qt.callLater(function () {
+                // status 0 matches XHR's own convention for a network-level
+                // failure (no response at all), so callers already handling
+                // that case degrade the same way a real network error would.
+                backend.httpFetchFinished(id, 0, "httpFetch() is disabled in this widget's settings.", url)
+            })
+            return id
+        }
         var xhr = new XMLHttpRequest()
         xhr.onreadystatechange = function () {
             if (xhr.readyState === XMLHttpRequest.DONE) {
