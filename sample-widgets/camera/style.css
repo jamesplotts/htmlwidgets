@@ -177,6 +177,12 @@
   flex-direction: column;
   padding: 12px;
   gap: 8px;
+  /* On a small widget, the header + add-row can consume the overlay's
+     entire height, and cam-list's flex:1 + min-height:0 would then
+     collapse it to literally 0px — correct DOM, zero visible rows.
+     Letting the whole overlay scroll is the fallback once cam-list's own
+     min-height floor (below) still isn't enough room. */
+  overflow-y: auto;
 }
 
 .cam-overlay-header {
@@ -196,7 +202,12 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 0;
+  /* Not 0 — a true 0 lets this collapse completely (DOM correct, zero
+     visible height) whenever the header + add-row above/below already
+     consume the overlay's available space, which happens on a small
+     widget. This floor guarantees at least ~2 rows stay visible/scrollable
+     no matter how little room is left. */
+  min-height: 64px;
 }
 
 .cam-list-item {
