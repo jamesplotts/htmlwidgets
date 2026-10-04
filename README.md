@@ -118,24 +118,37 @@ drag-and-drop onto the widget uses), which `main.qml` treats as an
   ~/.local/share/html-widgets/radio/index.html
 ```
 
-## ⚠️ QtWebEngine + Plasma: a real ordering bug, and what it means for you
+## ⚠️ QtWebEngine + Plasma: a known ordering bug, optional fix included
 
 QtWebEngine has a hard requirement: `QtWebEngineQuick::initialize()` must
 run on the main thread *before* `QGuiApplication` is constructed. Plasma's
-QML engine, though, resolves `import QtWebEngine` (and `dlopen()`s its
+QML engine, though, can resolve `import QtWebEngine` (and `dlopen()` its
 plugin) lazily on a background thread the first time a plasmoid using it is
 loaded — by which point `QGuiApplication` already exists and the loader
-thread isn't the main thread either. QtWebEngine hard-aborts the process
-when that happens:
+thread isn't the main thread either. When that race is lost, QtWebEngine
+hard-aborts the process:
 
 ```
 QtWebEngineQuick::initialize() must be called from the Qt gui thread.
 ```
 
-This isn't a bug in this plasmoid's QML — it reproduces with any
-QtWebEngine-using plasmoid, in both `plasmoidviewer` and `plasmashell`,
-because neither host knows in advance that it needs to initialize
-WebEngine before anything else touches it.
+**Status as of 2026-10-04, tested on Plasma 6.3.6 / Qt 6.8.2 base + Qt
+WebEngine 6.10.2 (Debian 13/MX 25):** this no longer reproduces. We
+tested it directly — adding `org.james.htmlwidgets` (and separately,
+KDE's own `org.kde.plasma.webbrowser`, also QtWebEngine-based) to a real,
+live `plasmashell` with the shim below fully disabled, no crash either
+time; same result in `plasmoidviewer`. We don't know why — nothing in the
+Qt/WebEngine package versions changed between when the shim below was
+written and this test, and the journal shows no record of the abort ever
+actually firing on this machine, even on the night the shim was written.
+It's possible the "reproduces in both `plasmoidviewer` and `plasmashell`"
+claim below was never independently verified in both, or that this is
+fixed on current Plasma 6.3+/Qt 6.8+ but still present on older Plasma 6
+installs (6.0–6.2 / Qt 6.4–6.7) we haven't tested.
+
+**If `plasmashell` crashes right when you add this widget**, that's this
+bug — the fix below is kept in the repo for exactly that case, even
+though it's no longer applied by default.
 
 **The fix:** `tools/webengine_preinit.cpp` is a tiny shared library whose
 constructor calls `QtWebEngineQuick::initialize()` — a shared library's
@@ -145,10 +158,10 @@ that to happen before Plasma (or anything else) gets a chance to trip the
 lazy/background path. `tools/test-plasmoidviewer.sh` does this for you for
 testing.
 
-**What this means for actually using the widget day-to-day:** adding
-`org.james.htmlwidgets` through Plasma's "Add Widgets" into your *normal,
-already-running* `plasmashell` will hit the same abort and crash
-plasmashell, because that process was started without the shim preloaded.
+**If you hit the crash day-to-day:** adding `org.james.htmlwidgets`
+through Plasma's "Add Widgets" into your *normal, already-running*
+`plasmashell` would hit the same abort, because that process started
+without the shim preloaded. Enable it for real as below.
 
 ### Enabling it for real
 
