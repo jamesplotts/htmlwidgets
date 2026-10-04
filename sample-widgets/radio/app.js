@@ -115,10 +115,18 @@
     });
     knobWrap.addEventListener("pointermove", function (e) {
       if (!dragging) return;
+      // The release can go missing (plasmashell grabbing the press for a
+      // widget move, pointercancel, release outside the view), which used
+      // to leave dragging stuck true so plain hovering turned the knob.
+      // Only honor movement while a button is actually held.
+      if (!(e.buttons & 1)) { dragging = false; return; }
       var dy = startY - e.clientY;
       setVolume(startVolume + dy / KNOB_DRAG_PIXELS_FOR_FULL_SWEEP);
     });
-    knobWrap.addEventListener("pointerup", function () { dragging = false; });
+    function endDrag() { dragging = false; }
+    knobWrap.addEventListener("pointerup", endDrag);
+    knobWrap.addEventListener("pointercancel", endDrag);
+    knobWrap.addEventListener("lostpointercapture", endDrag);
     knobWrap.addEventListener("wheel", function (e) {
       e.preventDefault();
       setVolume(volume - Math.sign(e.deltaY) * 0.05);
