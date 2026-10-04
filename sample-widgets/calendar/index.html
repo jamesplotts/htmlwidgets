@@ -26,6 +26,16 @@
 
       <div id="grid" class="cal-grid"></div>
     </div>
+
+    <div id="noteOverlay" class="note-overlay hidden">
+      <div class="note" role="dialog" aria-labelledby="noteDate">
+        <div class="note-header">
+          <div id="noteDate" class="note-date">Date</div>
+          <button id="noteDoneBtn" class="note-done" aria-label="Close note">Done</button>
+        </div>
+        <textarea id="noteText" class="note-text" placeholder="Write a note…" spellcheck="true"></textarea>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

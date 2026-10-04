@@ -207,7 +207,7 @@ package/org.james.htmlwidgets/   the plasmoid itself
 sample-widgets/common/           shared card chrome (card.css) the bundled widgets all link to
 sample-widgets/sample/           clock + CPU/mem gauges, the original demo widget
 sample-widgets/weather/          current conditions + 4-day forecast (Open-Meteo)
-sample-widgets/calendar/         month grid
+sample-widgets/calendar/         month grid; click a day for a sticky note (journal/reminders)
 sample-widgets/clock/            round analog clock
 sample-widgets/radio/            Radio Garden player with spectrum analyzer (enable httpFetch in its config)
 sample-widgets/camera/           live HLS video player (vendors hls.js)

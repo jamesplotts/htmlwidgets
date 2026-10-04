@@ -47,6 +47,11 @@
   font-size: 0.78em;
   border-radius: 6px;
   position: relative;
+  cursor: pointer;
+}
+
+.cal-day:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .cal-day.sunday {
@@ -65,4 +70,108 @@
   background: rgba(255, 255, 255, 0.22);
   font-weight: 700;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* Days with a sticky note: amber tint, still readable on top of the
+   today highlight when both apply. */
+.cal-day.has-note {
+  background: rgba(255, 202, 40, 0.30);
+  box-shadow: inset 0 0 0 1px rgba(255, 213, 79, 0.65);
+}
+
+.cal-day.has-note:hover {
+  background: rgba(255, 202, 40, 0.42);
+}
+
+.cal-day.today.has-note {
+  background: rgba(255, 202, 40, 0.45);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.note-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  padding: 10px;
+  background: rgba(8, 14, 28, 0.55);
+  border-radius: var(--card-radius);
+}
+
+.note-overlay.hidden {
+  display: none;
+}
+
+.note {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  background: linear-gradient(170deg, #fff59d 0%, #ffe57f 100%);
+  color: #3e3a1f;
+  text-shadow: none;
+  border-radius: 4px 4px 4px 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  transform: rotate(-0.6deg);
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.note-date {
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-done {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font: inherit;
+  font-size: 0.7em;
+  font-weight: 600;
+  background: rgba(62, 58, 31, 0.14);
+  color: inherit;
+  cursor: pointer;
+}
+
+.note-done:hover {
+  background: rgba(62, 58, 31, 0.26);
+}
+
+.note-text {
+  flex: 1;
+  min-height: 0;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82em;
+  line-height: 1.4;
+  padding: 0;
+  /* Explicit, so normal selection + copy/paste keep working even if a
+     shared style ever turns selection off for the card chrome. */
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.note-text::selection {
+  background: rgba(62, 58, 31, 0.28);
+}
+
+.note-text::placeholder {
+  color: rgba(62, 58, 31, 0.5);
 }
