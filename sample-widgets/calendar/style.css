@@ -1,3 +1,11 @@
+/* Only the note's own text is selectable. Otherwise a drag that starts in
+   the note and overshoots its edge selects (and copies) the month name,
+   weekday labels, every day number and the Done button underneath. */
+.card {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .cal-body {
   gap: 8px;
 }
@@ -114,7 +122,8 @@
   text-shadow: none;
   border-radius: 4px 4px 4px 14px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
-  transform: rotate(-0.6deg);
+  /* No tilt: a rotated textarea's 1px caret can fail to paint under
+     QtWebEngine's GPU compositing, leaving no visible insertion point. */
 }
 
 .note-header {
@@ -166,6 +175,7 @@
      shared style ever turns selection off for the card chrome. */
   user-select: text;
   -webkit-user-select: text;
+  caret-color: #1f1c08;
 }
 
 .note-text::selection {
@@ -181,6 +191,8 @@
 }
 
 .note-view {
+  user-select: text;
+  -webkit-user-select: text;
   overflow-y: auto;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

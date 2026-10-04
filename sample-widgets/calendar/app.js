@@ -4,7 +4,7 @@
 //
 // Clicking a day opens a sticky note for that date. Notes are stored in
 // localStorage keyed by YYYY-MM-DD, saved as you type and again on close;
-// clearing a note's text deletes it. Days with a note are tinted. A saved
+// clearing a note's text deletes it. Done, Escape or Ctrl+Enter closes it. Days with a note are tinted. A saved
 // note opens in a read view where web links are clickable; clicking its
 // text (not a link) switches to editing.
 (function () {
@@ -199,7 +199,10 @@
   noteText.addEventListener("input", storeOpenNote);
   noteDoneBtn.addEventListener("click", closeNote);
   noteText.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") { e.preventDefault(); closeNote(); }
+    if (e.key === "Escape" || (e.key === "Enter" && (e.ctrlKey || e.metaKey))) {
+      e.preventDefault();
+      closeNote();
+    }
   });
   noteOverlay.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && !noteView.classList.contains("hidden")) closeNote();
