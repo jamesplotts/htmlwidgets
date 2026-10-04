@@ -227,6 +227,7 @@
   font-weight: 600;
 }
 
+.cam-edit-btn,
 .cam-remove-btn {
   appearance: none;
   border: none;
@@ -238,6 +239,18 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.cam-edit-btn {
+  background: rgba(79, 195, 247, 0.18);
+  color: #4fc3f7;
+}
+
+.cam-edit-btn:hover {
+  background: rgba(79, 195, 247, 0.32);
+}
+
+.cam-remove-btn {
   background: rgba(224, 75, 63, 0.18);
   color: #ff8a80;
 }
@@ -246,6 +259,7 @@
   background: rgba(224, 75, 63, 0.32);
 }
 
+.cam-edit-btn svg,
 .cam-remove-btn svg {
   width: 10px;
   height: 10px;
@@ -253,6 +267,7 @@
   stroke: currentColor;
   stroke-width: 2.5;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .cam-add-row {
@@ -277,6 +292,15 @@
   border-color: rgba(255, 255, 255, 0.6);
 }
 
+.cam-add-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.cam-add-btns .cam-btn {
+  flex: 1;
+}
+
 .cam-btn {
   appearance: none;
   border: none;
@@ -288,6 +312,15 @@
   cursor: pointer;
   background: #4fc3f7;
   color: #00243f;
+}
+
+.cam-btn-secondary {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text-color);
+}
+
+.cam-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.24);
 }
 
 .cam-error {

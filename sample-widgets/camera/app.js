@@ -31,6 +31,7 @@
   var newLabel = document.getElementById("newLabel");
   var newUrl = document.getElementById("newUrl");
   var addCamBtn = document.getElementById("addCamBtn");
+  var cancelEditBtn = document.getElementById("cancelEditBtn");
   var addError = document.getElementById("addError");
 
   var cameras = [];
@@ -38,6 +39,9 @@
   var hls = null;
   var isPlaying = false;
   var muted = true;
+  // Id of the camera being edited, or null when the add row is for a new
+  // entry. Same two inputs serve both; addCamera() branches on this.
+  var editingId = null;
 
   // ---------- storage ----------
 
@@ -218,6 +222,17 @@
       label.textContent = cam.label;
       row.appendChild(label);
 
+      var editBtn = document.createElement("button");
+      editBtn.className = "cam-edit-btn";
+      editBtn.title = "Edit";
+      editBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 20h9"/>' +
+        '<path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+      editBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        startEditCam(cam);
+      });
+      row.appendChild(editBtn);
+
       var removeBtn = document.createElement("button");
       removeBtn.className = "cam-remove-btn";
       removeBtn.title = "Remove";
@@ -226,6 +241,7 @@
         e.stopPropagation();
         cameras = cameras.filter(function (c) { return c.id !== cam.id; });
         saveCameras();
+        if (editingId === cam.id) cancelEdit();
         if (currentId === cam.id) {
           stop();
           currentId = cameras.length ? cameras[0].id : null;
@@ -250,9 +266,7 @@
   function openManage() {
     manageOverlay.classList.remove("hidden");
     videoWrap.classList.add("always-show-ui");
-    newLabel.value = "";
-    newUrl.value = "";
-    addError.textContent = "";
+    cancelEdit();
     renderCamList();
   }
 
@@ -263,6 +277,31 @@
 
   manageBtn.addEventListener("click", openManage);
   closeManageBtn.addEventListener("click", closeManage);
+
+  // Populates the add row with an existing camera's values and flips
+  // addCamera() into update-in-place mode via editingId, instead of a
+  // separate edit form. Mirrors the existing add/remove row rather than
+  // introducing a new UI pattern.
+  function startEditCam(cam) {
+    editingId = cam.id;
+    newLabel.value = cam.label;
+    newUrl.value = cam.url;
+    addError.textContent = "";
+    addCamBtn.textContent = "Save";
+    cancelEditBtn.classList.remove("hidden");
+    newLabel.focus();
+  }
+
+  function cancelEdit() {
+    editingId = null;
+    newLabel.value = "";
+    newUrl.value = "";
+    addError.textContent = "";
+    addCamBtn.textContent = "Add";
+    cancelEditBtn.classList.add("hidden");
+  }
+
+  cancelEditBtn.addEventListener("click", cancelEdit);
 
   function addCamera() {
     var label = newLabel.value.trim();
@@ -275,6 +314,25 @@
       addError.textContent = "That doesn't look like a URL (expected http:// or https://).";
       return;
     }
+
+    if (editingId) {
+      var editedCam = findCamera(editingId);
+      if (editedCam) {
+        editedCam.label = label;
+        editedCam.url = url;
+        saveCameras();
+        if (editedCam.id === currentId) {
+          camLabel.textContent = editedCam.label;
+          // URL may have changed — restart playback so it takes effect
+          // immediately rather than waiting for the next manual play().
+          if (isPlaying) play();
+        }
+      }
+      cancelEdit();
+      renderCamList();
+      return;
+    }
+
     var cam = { id: "cam" + Date.now(), label: label, url: url };
     cameras.push(cam);
     saveCameras();

@@ -57,7 +57,10 @@
       <div class="cam-add-row">
         <input id="newLabel" type="text" placeholder="Label (e.g. Front Cam)" spellcheck="false" autocomplete="off">
         <input id="newUrl" type="text" placeholder="Stream URL (.m3u8)" spellcheck="false" autocomplete="off">
-        <button id="addCamBtn" class="cam-btn">Add</button>
+        <div class="cam-add-btns">
+          <button id="addCamBtn" class="cam-btn">Add</button>
+          <button id="cancelEditBtn" class="cam-btn cam-btn-secondary hidden">Cancel</button>
+        </div>
       </div>
       <div id="addError" class="cam-error"></div>
     </div>
