@@ -57,6 +57,17 @@ APIs (Radio Garden's, for one) send no CORS headers at all, so page-level
 
 ## Requirements
 
+**Plasma 6 is a hard minimum, not just the tested version.** This package
+declares `"X-Plasma-API-Minimum-Version": "6.0"` and uses KF6/Qt6-only QML
+modules that don't exist under Plasma 5 (e.g. Debian 12/bookworm, which
+ships Plasma 5.27). On Plasma 5, installing via the KDE Store / Discover
+still "succeeds" — KNewStuff just unpacks the files without checking
+compatibility — but adding the widget to a desktop or panel does nothing:
+no crash, no error, no log output at all, since the applet's QML never
+gets far enough to execute. If that's what you're seeing, the fix is to
+upgrade the desktop (e.g. to a Plasma-6 distro), not to troubleshoot the
+widget itself.
+
 ```
 sudo apt install plasma-sdk   # for plasmoidviewer, kpackagetool6 testing
 ```
