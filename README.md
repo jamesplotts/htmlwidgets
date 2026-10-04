@@ -16,7 +16,9 @@ Published on the KDE Store: https://www.opendesktop.org/p/2377033/
   anywhere (default: the bundled sample widget).
 - Transparent background, so the HTML fully controls its own look.
 - Persistent (not off-the-record) WebEngine profile — `localStorage`
-  survives plasmashell restarts.
+  survives plasmashell restarts. Each widget instance gets its own profile
+  (`~/.local/share/org.james.htmlwidgets/webengine-profile-<applet id>`),
+  so two copies of the same widget keep separate settings.
 - Exposes a `backend` object to page JS over QWebChannel:
   - `backend.cpu(cb)` → `cb({percent})`
   - `backend.memory(cb)` → `cb({totalMb, usedMb, availableMb, percent})`

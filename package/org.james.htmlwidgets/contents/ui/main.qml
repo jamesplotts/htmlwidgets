@@ -91,15 +91,23 @@ PlasmoidItem {
     // path, makes localStorage (e.g. the weather widget's saved city)
     // resolve to the same place no matter which host loads this plasmoid,
     // and removes any ambiguity about it surviving a restart.
+    //
+    // The path is per applet instance (Plasmoid.id), not shared: every
+    // instance creates its own WebEngineProfile, and LevelDB allows only
+    // one open handle per database per process. With a shared path, the
+    // first instance to start got the real on-disk localStorage and every
+    // other one silently fell back to in-memory storage — so e.g. the
+    // weather widget's city was lost on every plasmashell restart while
+    // the camera widget's list (which happened to win) persisted fine.
     readonly property string profileStoragePath:
         root._stripFileScheme(Labs.StandardPaths.writableLocation(Labs.StandardPaths.HomeLocation))
-        + "/.local/share/org.james.htmlwidgets/webengine-profile"
+        + "/.local/share/org.james.htmlwidgets/webengine-profile-" + Plasmoid.id
 
     WebEngineProfile {
         id: webProfile
         // Named, persistent (not off-the-record) profile: localStorage,
         // cookies and cache survive across plasmashell restarts.
-        storageName: "org.james.htmlwidgets"
+        storageName: "org.james.htmlwidgets-" + Plasmoid.id
         offTheRecord: false
         persistentStoragePath: root.profileStoragePath
         cachePath: root.profileStoragePath + "/cache"
