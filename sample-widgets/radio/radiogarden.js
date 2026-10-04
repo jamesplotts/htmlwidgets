@@ -80,7 +80,14 @@ var RadioGarden = (function () {
 
   function getJSON(url) {
     return request(url, "GET").then(function (r) {
-      if (r.status === 0) throw new Error("Network error");
+      if (r.status === 0) {
+        // Backend.qml refuses with status 0 and this body when the
+        // "Allow network requests" checkbox is off — flag it so the UI
+        // can tell the user how to fix it instead of looking broken.
+        var err = new Error(r.body || "Network error");
+        if (/disabled in this widget's settings/.test(r.body || "")) err.fetchDisabled = true;
+        throw err;
+      }
       if (r.status < 200 || r.status >= 300) throw new Error("HTTP " + r.status);
       try {
         return JSON.parse(r.body);

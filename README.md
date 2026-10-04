@@ -39,8 +39,8 @@ Published on the KDE Store: https://www.opendesktop.org/p/2377033/
   floating widget once placed.
 - Ships six widgets as a matching set (shared card chrome, see
   `sample-widgets/common/card.css`) in `sample-widgets/`: `sample/`
-  (clock + CPU/mem gauges), `weather/`, `calendar/`, `clock/`, `radio/`,
-  and `camera/` (live HLS video, e.g. a Shinobi NVR monitor).
+  (clock + CPU/mem gauges), `weather/`, `calendar/`, `clock/`, `radio/`
+  (needs httpFetch enabled in its widget settings), and `camera/` (live HLS video, e.g. a Shinobi NVR monitor).
 
 ## ⚠️ `run()` and `httpFetch()` expand what loaded HTML can do
 
@@ -207,7 +207,7 @@ sample-widgets/sample/           clock + CPU/mem gauges, the original demo widge
 sample-widgets/weather/          current conditions + 4-day forecast (Open-Meteo)
 sample-widgets/calendar/         month grid
 sample-widgets/clock/            round analog clock
-sample-widgets/radio/            Radio Garden player with spectrum analyzer
+sample-widgets/radio/            Radio Garden player with spectrum analyzer (enable httpFetch in its config)
 sample-widgets/camera/           live HLS video player (vendors hls.js)
 tools/                           WebEngine preinit shim, test/enable/disable scripts
 install.sh                       installs the plasmoid + all bundled widgets for the current user
@@ -250,8 +250,14 @@ look alarming but aren't actionable:
 
 `sample-widgets/radio/` is a retro hi-fi-styled player for Radio Garden
 stations (search, favorites, a brushed-metal faceplate with a scrolling
-LCD station name, and a ~20-bar LED spectrum analyzer). A few things worth
-knowing if you touch it:
+LCD station name, and a ~20-bar LED spectrum analyzer).
+
+**Enable httpFetch first:** right-click the widget → Configure → check
+"Allow the page to make network requests (httpFetch())". It's off by
+default, and without it search and station lookup can't work — the widget
+says so in its status line instead of just showing no results.
+
+A few things worth knowing if you touch it:
 
 - **The Radio Garden API has no CORS headers at all.** A curl request with
   faked browser headers succeeding means nothing here — curl doesn't

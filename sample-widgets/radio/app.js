@@ -414,6 +414,13 @@
     searchResults.appendChild(frag);
   }
 
+  var FETCH_DISABLED_TEXT =
+    "Network requests are off — enable \u201cAllow the page to make network requests (httpFetch())\u201d in this widget's settings.";
+
+  function errorText(err, fallback) {
+    return err && err.fetchDisabled ? FETCH_DISABLED_TEXT : fallback;
+  }
+
   function showPlace(place) {
     placeStack.push(place);
     searchStatus.textContent = "Loading " + place.title + "…";
@@ -423,7 +430,7 @@
         renderResults(channels, place.title);
       })
       .catch(function (err) {
-        searchStatus.textContent = "Couldn't load that city — try again later.";
+        searchStatus.textContent = errorText(err, "Couldn't load that city — try again later.");
         searchStatus.classList.add("error");
         console.log("[radio] channelsForPlace failed: " + err.message);
       });
@@ -443,7 +450,7 @@
         renderResults(items, null);
       })
       .catch(function (err) {
-        searchStatus.textContent = "Search unavailable right now.";
+        searchStatus.textContent = errorText(err, "Search unavailable right now.");
         searchStatus.classList.add("error");
         console.log("[radio] search failed: " + err.message);
       });
