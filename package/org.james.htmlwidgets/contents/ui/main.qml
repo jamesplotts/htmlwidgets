@@ -142,6 +142,27 @@ PlasmoidItem {
             console.log("[htmlwidgets:page]", sourceId + ":" + lineNumber, message)
         }
 
+        // A widget is a fixed page, not a browser: web links (target=_blank
+        // or a plain click) open in the user's default browser/mail client
+        // instead of replacing the widget's own content.
+        function isExternalUrl(u) {
+            return /^(https?|mailto):/i.test(String(u))
+        }
+
+        onNewWindowRequested: function (request) {
+            if (isExternalUrl(request.requestedUrl))
+                Qt.openUrlExternally(request.requestedUrl)
+        }
+
+        onNavigationRequested: function (request) {
+            if (request.isMainFrame
+                    && request.navigationType === WebEngineNavigationRequest.LinkClickedNavigation
+                    && isExternalUrl(request.url)) {
+                request.reject()
+                Qt.openUrlExternally(request.url)
+            }
+        }
+
         onLoadingChanged: function (loadRequest) {
             if (loadRequest.status === WebEngineView.LoadFailedStatus) {
                 console.log("[htmlwidgets] failed to load", root.htmlPath, loadRequest.errorString)

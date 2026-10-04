@@ -4,7 +4,9 @@
 //
 // Clicking a day opens a sticky note for that date. Notes are stored in
 // localStorage keyed by YYYY-MM-DD, saved as you type and again on close;
-// clearing a note's text deletes it. Days with a note are tinted.
+// clearing a note's text deletes it. Days with a note are tinted. A saved
+// note opens in a read view where web links are clickable; clicking its
+// text (not a link) switches to editing.
 (function () {
   "use strict";
 
@@ -15,9 +17,13 @@
   var noteOverlay = document.getElementById("noteOverlay");
   var noteDate = document.getElementById("noteDate");
   var noteText = document.getElementById("noteText");
+  var noteView = document.getElementById("noteView");
   var noteDoneBtn = document.getElementById("noteDoneBtn");
 
   var NOTES_KEY = "htmlwidgets.calendar.notes";
+  // http(s) URLs and bare www. hosts; trailing punctuation is trimmed off
+  // below so "see https://x.org." doesn't swallow the period.
+  var URL_RE = /\b(?:https?:\/\/|www\.)[^\s<>"]+/gi;
 
   var MONTH_NAMES = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
@@ -60,6 +66,42 @@
       MONTH_NAMES[month] + " " + day + ", " + year;
     noteText.value = notes[openKey] || "";
     noteOverlay.classList.remove("hidden");
+    if (noteText.value) showView();
+    else showEditor();
+  }
+
+  // Renders text with URLs as links, built from text nodes so note
+  // content can never inject markup.
+  function renderLinked(container, text) {
+    container.textContent = "";
+    var last = 0, m;
+    URL_RE.lastIndex = 0;
+    while ((m = URL_RE.exec(text)) !== null) {
+      var raw = m[0].replace(/[.,;:!?)\]}'"]+$/, "");
+      if (!raw) continue;
+      container.appendChild(document.createTextNode(text.slice(last, m.index)));
+      var a = document.createElement("a");
+      a.href = /^www\./i.test(raw) ? "https://" + raw : raw;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = raw;
+      container.appendChild(a);
+      last = m.index + raw.length;
+      URL_RE.lastIndex = last;
+    }
+    container.appendChild(document.createTextNode(text.slice(last)));
+  }
+
+  function showView() {
+    renderLinked(noteView, noteText.value);
+    noteText.classList.add("hidden");
+    noteView.classList.remove("hidden");
+    noteDoneBtn.focus();
+  }
+
+  function showEditor() {
+    noteView.classList.add("hidden");
+    noteText.classList.remove("hidden");
     noteText.focus();
     noteText.setSelectionRange(noteText.value.length, noteText.value.length);
   }
@@ -158,6 +200,16 @@
   noteDoneBtn.addEventListener("click", closeNote);
   noteText.addEventListener("keydown", function (e) {
     if (e.key === "Escape") { e.preventDefault(); closeNote(); }
+  });
+  noteOverlay.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !noteView.classList.contains("hidden")) closeNote();
+  });
+  // Clicking the read view's text edits it; links open, and a click that
+  // ends a drag-selection leaves the selection alone so it can be copied.
+  noteView.addEventListener("click", function (e) {
+    if (e.target.closest("a")) return;
+    if (String(window.getSelection())) return;
+    showEditor();
   });
   // Clicking the dimmed area around the note closes it too.
   noteOverlay.addEventListener("click", function (e) {

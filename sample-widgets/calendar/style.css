@@ -175,3 +175,24 @@
 .note-text::placeholder {
   color: rgba(62, 58, 31, 0.5);
 }
+
+.note-text.hidden {
+  display: none;
+}
+
+.note-view {
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  cursor: text;
+}
+
+.note-view a {
+  color: #1a4fa0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.note-view a:hover {
+  color: #0d3577;
+}
