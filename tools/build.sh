@@ -6,15 +6,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if ! pkg-config --exists Qt6WebEngineQuick 2>/dev/null; then
-    echo "qt6-webengine-dev not found. Install it with:" >&2
-    echo "  sudo apt install qt6-webengine-dev" >&2
-    exit 1
-fi
-
+# No Qt headers or libraries needed: the shim dlopen()s QtWebEngine at
+# runtime, and only inside plasmashell/plasmoidviewer.
 g++ -shared -fPIC -O2 \
     -o "$SCRIPT_DIR/libwebengine_preinit.so" \
     "$SCRIPT_DIR/webengine_preinit.cpp" \
-    $(pkg-config --cflags --libs Qt6WebEngineQuick)
+    -ldl
 
 echo "Built $SCRIPT_DIR/libwebengine_preinit.so"

@@ -22,12 +22,16 @@ INSTALLED_SHIM="$INSTALL_DIR/libwebengine_preinit.so"
 DROPIN_DIR="$HOME/.config/systemd/user/plasma-plasmashell.service.d"
 DROPIN_FILE="$DROPIN_DIR/htmlwidgets-webengine-preinit.conf"
 
-if [ ! -f "$SCRIPT_DIR/libwebengine_preinit.so" ]; then
-    "$SCRIPT_DIR/build.sh"
-fi
+# Always rebuild: an older shim build leaked LD_PRELOAD into every app
+# plasmashell launched (breaking e.g. Steam), and re-running this script
+# must replace it rather than reuse a stale tools/libwebengine_preinit.so.
+"$SCRIPT_DIR/build.sh"
 
 mkdir -p "$INSTALL_DIR"
-cp -f "$SCRIPT_DIR/libwebengine_preinit.so" "$INSTALLED_SHIM"
+# Replace via rename, never in place: plasmashell may have the old copy
+# mapped, and overwriting a mapped library's contents can crash it.
+cp -f "$SCRIPT_DIR/libwebengine_preinit.so" "$INSTALLED_SHIM.new"
+mv -f "$INSTALLED_SHIM.new" "$INSTALLED_SHIM"
 echo "==> Installed shim to $INSTALLED_SHIM"
 
 mkdir -p "$DROPIN_DIR"

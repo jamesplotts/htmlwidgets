@@ -153,7 +153,8 @@ bug — the fix below is kept in the repo for exactly that case, even
 though it's no longer applied by default.
 
 **The fix:** `tools/webengine_preinit.cpp` is a tiny shared library whose
-constructor calls `QtWebEngineQuick::initialize()` — a shared library's
+constructor `dlopen()`s QtWebEngine and calls `QtWebEngineQuick::initialize()`
+(only when the process is plasmashell or plasmoidviewer) — a shared library's
 constructor runs during dynamic linking, before `main()`, which is the
 earliest point `initialize()` can legally run. `LD_PRELOAD`ing it forces
 that to happen before Plasma (or anything else) gets a chance to trip the
@@ -180,7 +181,18 @@ distros, including Debian/MX), this:
 2. Writes a `systemd --user` drop-in
    (`~/.config/systemd/user/plasma-plasmashell.service.d/`) that sets
    `LD_PRELOAD` for **only** the `plasma-plasmashell.service` unit — not
-   your whole graphical session, not other apps.
+   your whole graphical session. The shim also removes itself from
+   `LD_PRELOAD` as it loads and does nothing outside plasmashell /
+   plasmoidviewer, so apps you launch from Plasma don't inherit it.
+
+> **If you ran `enable-live.sh` before 2026-10-04:** that earlier shim
+> build *did* leak into every app launched from Plasma's menus/desktop, and
+> it pulled QtWebEngine into them — which breaks Steam (its runtime's older
+> libz can't satisfy QtWebEngineCore; Steam's launcher service crash-loops
+> with ``version `ZLIB_1.2.9' not found``). `git pull`, re-run
+> `./tools/enable-live.sh`, restart plasmashell, then quit and relaunch
+> any affected app. Or remove the shim entirely with
+> `./tools/disable-live.sh`.
 
 It does **not** restart plasmashell — do that yourself when ready:
 
